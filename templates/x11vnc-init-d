@@ -2,36 +2,52 @@
 
 ### BEGIN INIT INFO
 # Provides:             x11vnc
-# Required-Start:       $remote_fs $syslog
+# Required-Start:       lightdm
 # Required-Stop:        $remote_fs $syslog
 # Default-Start:        2 3 4 5
 # Default-Stop:
 # Short-Description:    x11vnc
 ### END INIT INFO
 
+#create password with (six characters):
+#vncpasswd ~/.vnc/passwd
+
 case "$1" in
 start)
   pid="$(pidof x11vnc)"
-  if [[ $? -eq 0 && "$pid" != "" ]];then
+  if [[ $? -eq 0 && "$pid" != "" ]]; then
     echo "Start x11vnc: already started"
   else
-    x11vnc -bg -display :0 -forever -rfbauth ~/.vnc/passwd --noipv6 -no6 --scale 1552x1000
+    sleep 10
+    #following seems doesn't work
+    xpid="$(pidof lightdm)"; [[ "x$pid" == "" ]] && sleep 5
+    sleep 5
+    echo 'x11vnc -bg -display :0 -forever -rfbauth ~/.vnc/passwd --noipv6 -no6 --scale 1552x1000 &>> ~/.vnc/x11vnc.log' | su - pi -
     sleep 2
     echo "Start x11vnc: $(pidof x11vnc)"
-  if
-  ;;
+  fi
+;;
 stop)
   pid="$(pidof x11vnc)"
-  if [[ $? -eq 0 && "$pid" != "" ]];then
+  if [[ $? -eq 0 && "$pid" != "" ]]; then
     echo "Stop x11vnc: $pid."
     kill -9 $pid
   else
     echo "Stop x11vnc: not running"
     exit 1
   fi
-  ;;
+;;
+status)
+  pid="$(pidof x11vnc)"
+  if [[ "$pid" != "" ]]; then
+    echo "Status x11vnc: $pid"
+  else
+    echo "Status x11vnc: not running"
+  fi
+;;
 *)
   echo "Usage: service x11vnc {start|stop}"
   exit 1
 ;;
 esac
+
